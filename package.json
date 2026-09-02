@@ -1,0 +1,15 @@
+{
+  "name": "alert-analysis-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Binance Agent OS hackathon (Track A) — Alert & Analysis Agent",
+  "scripts": {
+    "dev": "vercel dev",
+    "test:check": "node -e \"import('./api/check-alerts.js').then(m => m.default({}, { status: (c) => ({ json: (d) => console.log(c, JSON.stringify(d, null, 2)) }) }))\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}
