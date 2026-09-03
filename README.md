@@ -7,7 +7,7 @@ Binance Agent OS Mini Hackathon — Track A submission.
 Watches a list of trading pairs through **Binance Agent OS's MCP server**,
 detects meaningful price moves or volume spikes, asks an LLM (Groq) to
 explain the move in plain language, logs it to Supabase, and emails an
-alert via Resend.
+alert via Resend. 
 
 ```
 Vercel Cron (every 15 min)
