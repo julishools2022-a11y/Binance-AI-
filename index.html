@@ -3,45 +3,100 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Alert & Analysis Agent — Dashboard</title>
+<title>Alert & Analysis Agent — Binance Agent OS</title>
 <style>
   :root {
-    --bg: #0b0e14;
-    --card: #131722;
-    --border: #232838;
-    --text: #e6e9f0;
-    --muted: #8a91a3;
-    --accent: #f0b90b; /* Binance yellow */
-    --up: #2ebd85;
-    --down: #f6465d;
+    --yellow: #F0B90B;
+    --yellow-dim: #C99400;
+    --black: #0B0E11;
+    --card: #14151A;
+    --border: #2B2F36;
+    --border-glow: rgba(240,185,11,0.35);
+    --text: #EAECEF;
+    --muted: #848E9C;
+    --up: #0ECB81;
+    --down: #F6465D;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: var(--bg);
+    background: var(--black);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    padding: 20px 16px 60px;
+    padding-bottom: 60px;
   }
-  header {
-    max-width: 720px;
-    margin: 0 auto 24px;
+
+  /* Banner — Binance yellow, bold, poster-style */
+  .banner {
+    background: var(--yellow);
+    color: #000;
+    padding: 28px 20px 34px;
+    text-align: left;
   }
-  header h1 {
-    font-size: 1.4rem;
-    margin: 0 0 4px;
+  .banner .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.75;
+    margin-bottom: 6px;
   }
-  header p {
-    color: var(--muted);
+  .banner h1 {
+    margin: 0 0 6px;
+    font-size: 1.7rem;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+  .banner p {
     margin: 0;
     font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.85;
   }
+
+  /* Category badge, styled like the workflow cards in the hackathon poster */
+  .category-card {
+    max-width: 720px;
+    margin: -18px auto 24px;
+    background: var(--black);
+    border: 1px solid var(--yellow);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 0 24px var(--border-glow);
+  }
+  .category-icon {
+    background: var(--yellow);
+    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+  .category-text .label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--yellow);
+  }
+  .category-text .sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
   .status-row {
     max-width: 720px;
     margin: 0 auto 20px;
+    padding: 0 20px;
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+    align-items: center;
   }
   .pill {
     background: var(--card);
@@ -53,19 +108,22 @@
   }
   .pill b { color: var(--text); }
   #refresh {
-    background: var(--accent);
+    background: var(--yellow);
     color: #000;
     border: none;
     border-radius: 999px;
-    padding: 6px 16px;
+    padding: 7px 18px;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     margin-left: auto;
   }
+  #refresh:active { background: var(--yellow-dim); }
+
   main {
     max-width: 720px;
     margin: 0 auto;
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -73,8 +131,9 @@
   .card {
     background: var(--card);
     border: 1px solid var(--border);
+    border-left: 3px solid var(--yellow);
     border-radius: 12px;
-    padding: 16px;
+    padding: 16px 18px;
   }
   .card-top {
     display: flex;
@@ -83,19 +142,20 @@
     margin-bottom: 8px;
   }
   .symbol {
-    font-weight: 700;
+    font-weight: 800;
     font-size: 1.05rem;
+    letter-spacing: 0.01em;
   }
   .badge {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.68rem;
+    font-weight: 700;
     padding: 3px 10px;
     border-radius: 999px;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
   }
-  .badge.price_move { background: rgba(240,185,11,0.15); color: var(--accent); }
-  .badge.volume_spike { background: rgba(46,189,133,0.15); color: var(--up); }
+  .badge.price_move { background: rgba(240,185,11,0.15); color: var(--yellow); }
+  .badge.volume_spike { background: rgba(14,203,129,0.15); color: var(--up); }
   .trigger-detail {
     color: var(--muted);
     font-size: 0.85rem;
@@ -103,34 +163,50 @@
   }
   .explanation {
     font-size: 0.92rem;
-    line-height: 1.5;
+    line-height: 1.55;
+    color: var(--text);
   }
   .timestamp {
     color: var(--muted);
-    font-size: 0.75rem;
-    margin-top: 10px;
+    font-size: 0.73rem;
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
   }
   .empty, .loading, .error {
     text-align: center;
     color: var(--muted);
-    padding: 40px 20px;
+    padding: 50px 20px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
   }
-  .error { color: var(--down); }
+  .error { color: var(--down); border-color: var(--down); }
   footer {
     max-width: 720px;
     margin: 30px auto 0;
+    padding: 0 20px;
     text-align: center;
     color: var(--muted);
     font-size: 0.75rem;
   }
+  footer .highlight { color: var(--yellow); font-weight: 600; }
 </style>
 </head>
 <body>
 
-<header>
+<div class="banner">
+  <div class="eyebrow">Binance Agent OS · Track A</div>
   <h1>⚡ Alert & Analysis Agent</h1>
-  <p>Live alert history — Binance market data, explained by AI.</p>
-</header>
+  <p>Real-time market moves, explained in plain language by AI.</p>
+</div>
+
+<div class="category-card">
+  <div class="category-icon">📊</div>
+  <div class="category-text">
+    <div class="label">Data & Analysis</div>
+    <div class="sub">Reports · Market Analysis · Portfolio Insights</div>
+  </div>
+</div>
 
 <div class="status-row">
   <span class="pill" id="count-pill">Loading…</span>
@@ -143,7 +219,7 @@
 </main>
 
 <footer>
-  Built for the Binance Agent OS Mini Hackathon (Track A)
+  Built for the <span class="highlight">Binance Agent OS Mini Hackathon</span> — Track A
 </footer>
 
 <script>
