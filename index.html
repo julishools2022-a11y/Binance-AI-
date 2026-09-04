@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Alert & Analysis Agent — Dashboard</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --card: #131722;
+    --border: #232838;
+    --text: #e6e9f0;
+    --muted: #8a91a3;
+    --accent: #f0b90b; /* Binance yellow */
+    --up: #2ebd85;
+    --down: #f6465d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 20px 16px 60px;
+  }
+  header {
+    max-width: 720px;
+    margin: 0 auto 24px;
+  }
+  header h1 {
+    font-size: 1.4rem;
+    margin: 0 0 4px;
+  }
+  header p {
+    color: var(--muted);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .status-row {
+    max-width: 720px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .pill b { color: var(--text); }
+  #refresh {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .symbol {
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .badge.price_move { background: rgba(240,185,11,0.15); color: var(--accent); }
+  .badge.volume_spike { background: rgba(46,189,133,0.15); color: var(--up); }
+  .trigger-detail {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+  .explanation {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+  .timestamp {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 10px;
+  }
+  .empty, .loading, .error {
+    text-align: center;
+    color: var(--muted);
+    padding: 40px 20px;
+  }
+  .error { color: var(--down); }
+  footer {
+    max-width: 720px;
+    margin: 30px auto 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ Alert & Analysis Agent</h1>
+  <p>Live alert history — Binance market data, explained by AI.</p>
+</header>
+
+<div class="status-row">
+  <span class="pill" id="count-pill">Loading…</span>
+  <span class="pill" id="latest-pill"></span>
+  <button id="refresh">Refresh</button>
+</div>
+
+<main id="alerts-container">
+  <div class="loading">Loading alerts…</div>
+</main>
+
+<footer>
+  Built for the Binance Agent OS Mini Hackathon (Track A)
+</footer>
+
+<script>
+  const SUPABASE_URL = "https://qgyuqwfzhodbyfemwxbw.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_Xm3Qec0YaKJ2nVz6LQ0qzw_uMXVLYoX";
+
+  const container = document.getElementById("alerts-container");
+  const countPill = document.getElementById("count-pill");
+  const latestPill = document.getElementById("latest-pill");
+  const refreshBtn = document.getElementById("refresh");
+
+  function timeAgo(iso) {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  }
+
+  function renderAlerts(alerts) {
+    if (!alerts.length) {
+      container.innerHTML = `<div class="empty">No alerts logged yet. Once the agent runs and a trigger fires, it'll show up here.</div>`;
+      countPill.textContent = "0 alerts";
+      latestPill.textContent = "";
+      return;
+    }
+
+    countPill.innerHTML = `<b>${alerts.length}</b> alert${alerts.length === 1 ? "" : "s"}`;
+    latestPill.textContent = `Latest: ${timeAgo(alerts[0].created_at)}`;
+
+    container.innerHTML = alerts.map(a => `
+      <div class="card">
+        <div class="card-top">
+          <span class="symbol">${a.symbol}</span>
+          <span class="badge ${a.trigger_type}">${a.trigger_type.replace("_", " ")}</span>
+        </div>
+        <div class="trigger-detail">${a.trigger_detail || ""}</div>
+        <div class="explanation">${a.explanation || ""}</div>
+        <div class="timestamp">${timeAgo(a.created_at)} · ${new Date(a.created_at).toLocaleString()}</div>
+      </div>
+    `).join("");
+  }
+
+  async function loadAlerts() {
+    container.innerHTML = `<div class="loading">Loading alerts…</div>`;
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/agent_alerts?select=*&order=created_at.desc&limit=50`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error(`Supabase error ${res.status}`);
+      const data = await res.json();
+      renderAlerts(data);
+    } catch (err) {
+      container.innerHTML = `<div class="error">Failed to load alerts: ${err.message}</div>`;
+    }
+  }
+
+  refreshBtn.addEventListener("click", loadAlerts);
+  loadAlerts();
+</script>
+
+</body>
+</html>
