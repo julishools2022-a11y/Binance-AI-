@@ -5,4 +5,5 @@
       "schedule": "0 9 * * *"
     }
   ]
+   "regions": ["cpt1"]
 }
